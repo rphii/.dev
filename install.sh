@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-HERE="$(dirname $0)"
+HERE="$(dirname $(realpath $0))"
 pushd "${HERE}"
 source files.env
 
