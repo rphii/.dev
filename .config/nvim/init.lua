@@ -5,6 +5,16 @@ function theme_next()
 
 end
 
+function has_words_before()
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+    if col == 0 then
+        return false
+    end
+    local line = vim.api.nvim_get_current_line()
+    return line:sub(col, col):match("%s") == nil
+end
+
+
 
 vim.opt.number = true
 vim.opt.foldmethod = 'marker'
@@ -14,50 +24,11 @@ vim.opt.expandtab = true -- Pressing the TAB key will insert spaces instead of a
 vim.opt.softtabstop = 4 -- Number of spaces inserted instead of a TAB character
 vim.opt.shiftwidth = 4 -- Number of spaces inserted when indenting
 vim.opt.cinoptions = 'l1'
+--vim.opt.winborder='single'
+vim.opt.winborder='rounded'
 
 vim.opt.completeopt = {'menu', 'menuone', 'noselect', 'noinsert'}
 vim.opt.shortmess:append('c')
-
-local function tab_complete()
-  if vim.fn.pumvisible() == 1 then
-    -- navigate to next item in completion menu
-    return '<Down>'
-  end
-
-  local c = vim.fn.col('.') - 1
-  local is_whitespace = c == 0 or vim.fn.getline('.'):sub(c, c):match('%s')
-
-  if is_whitespace then
-    -- insert tab
-    return '<Tab>'
-  end
-
-  local lsp_completion = vim.bo.omnifunc == 'v:lua.vim.lsp.omnifunc'
-
-  if lsp_completion then
-    -- trigger lsp code completion
-    --vim.fn.feedkeys("\\<CR>")
-    --vim.fn.feedkeys("<C-x><C-o>")
-    --vim.fn.feedkeys('<C-n>', 't')
-    return '<C-x><C-o>'
-  end
-
-  -- suggest words in current buffer
-  return '<C-x><C-n>'
-end
-
-local function tab_prev()
-  if vim.fn.pumvisible() == 1 then
-    -- navigate to previous item in completion menu
-    return '<Up>'
-  end
-
-  -- insert tab
-  return '<Tab>'
-end
-
-vim.keymap.set('i', '<Tab>', tab_complete, {expr = true})
-vim.keymap.set('i', '<S-Tab>', tab_prev, {expr = true})
 
 vim.lsp.enable('clangd')
 vim.lsp.enable('csharp')
@@ -121,7 +92,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     map("n", "[d", vim.diagnostic.goto_prev, "Prev diagnostic")
     map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
     map("n", "<leader>e", vim.diagnostic.open_float, "Line diagnostics")
-
     
     --local client_id = args.data.client_id
     --vim.lsp.completion.enable(true, client_id, 0, { autotrigger = true })
@@ -145,3 +115,4 @@ vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help ta
 vim.g["markdown_folding"] = 1
 
 vim.api.nvim_set_option("clipboard", "unnamed")
+
