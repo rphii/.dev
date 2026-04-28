@@ -9,6 +9,9 @@ return {
     ---@type blink.cmp.Config
     opts = {
         
+        -- disable cmdline
+        --cmdline = { enabled = false },
+        
         -- :h blink-cmp-config-keymap
         keymap = {
             preset = 'none',
@@ -17,23 +20,54 @@ return {
             ['<Tab>'] = {
                 function(cmp)
                     if has_words_before() then
+                        return cmp.show_and_insert()
+                    end
+                end,
+                --'show_and_insert',
+                function(cmp)
+                    --if not cmp.visible() then
+                        --cmp.complete()
+                    --end
+                    if has_words_before() then
+                        --return cmp.show_and_insert()
                         return cmp.insert_next()
                     end
                 end,
                 'fallback',
             },
             -- Navigate to the previous suggestion or cancel completion if currently on the first one.
-            ['<S-Tab>'] = { 'insert_prev', 'fallback' },
+            ['<S-Tab>'] = {
+                function(cmp)
+                    if has_words_before() then
+                        return cmp.insert_prev()
+                    end
+                end,
+                'fallback' },
             ['<C-e>'] = { 'hide', 'fallback' },
             ['<C-space>'] = { 'cancel', 'show', 'fallback' },
         },
 
         completion = {
-            documentation = { auto_show = true },
-            menu = { enabled = true },
+            documentation = { auto_show = true, window = { border = 'single' } },
+            menu = {
+                enabled = true, auto_show = false,
+                draw = {
+                    columns = {
+                        { "label", "label_description", gap = 1 },
+                        { "kind_icon", "kind" },
+                    },
+                },
+                border = 'single',
+            },
             list = { selection = { preselect = false }, cycle = { from_top = true } },
             trigger = { show_on_trigger_character = true, show_on_blocked_trigger_characters = { ' ', '\n', '\t' } },
             --ghost_text = { enabled = true, show_with_menu = false },
+        },
+
+        signature = { enabled = true, window = { border = 'single' } },
+
+        appearance = {
+            nerd_font_variant = 'mono',
         },
 
         -- Default list of enabled providers defined so that you can extend it

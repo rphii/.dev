@@ -25,7 +25,7 @@ vim.opt.softtabstop = 4 -- Number of spaces inserted instead of a TAB character
 vim.opt.shiftwidth = 4 -- Number of spaces inserted when indenting
 vim.opt.cinoptions = 'l1'
 --vim.opt.winborder='single'
-vim.opt.winborder='rounded'
+vim.opt.winborder='single'
 
 vim.opt.completeopt = {'menu', 'menuone', 'noselect', 'noinsert'}
 vim.opt.shortmess:append('c')
