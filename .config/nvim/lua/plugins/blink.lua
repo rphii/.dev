@@ -58,8 +58,12 @@ return {
                     },
                 },
                 border = 'single',
+                max_height = 200,
             },
-            list = { selection = { preselect = false }, cycle = { from_top = true } },
+            list = {
+                selection = { preselect = false },
+                cycle = { from_top = true },
+            },
             trigger = { show_on_trigger_character = true, show_on_blocked_trigger_characters = { ' ', '\n', '\t' } },
             --ghost_text = { enabled = true, show_with_menu = false },
         },
