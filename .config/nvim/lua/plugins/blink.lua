@@ -45,6 +45,7 @@ return {
                 'fallback' },
             ['<C-e>'] = { 'hide', 'fallback' },
             ['<C-space>'] = { 'cancel', 'show', 'fallback' },
+            --['<enter>'] = { 'accept', 'fallback' },
         },
 
         completion = {
@@ -77,7 +78,8 @@ return {
         -- Default list of enabled providers defined so that you can extend it
         -- elsewhere in your config, without redefining it, due to `opts_extend`
         sources = {
-            default = { 'lsp', 'path', 'snippets', 'buffer' },
+            --default = { 'lsp', 'path', 'snippets', 'buffer' },
+            default = { 'lsp', 'path', 'snippets' },
         },
 
         -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance

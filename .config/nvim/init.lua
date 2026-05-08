@@ -1,5 +1,6 @@
 require('config.lazy')
-vim.cmd("colorscheme habamax")
+--vim.cmd("colorscheme habamax")
+vim.cmd("colorscheme shine")
 
 function theme_next()
 
@@ -116,3 +117,166 @@ vim.g["markdown_folding"] = 1
 
 vim.api.nvim_set_option("clipboard", "unnamed")
 
+
+local set_hl_for_floating_window = function()
+  vim.api.nvim_set_hl(0, 'NormalFloat', {
+    link = 'Normal',
+  })
+  vim.api.nvim_set_hl(0, 'FloatBorder', {
+    bg = 'none',
+  })
+
+  --vim.api.nvim_set_hl(0, "CmpItemAbbr", { link = 'Normal', })
+  --vim.api.nvim_set_hl(0, "CmpDoc", { link = 'Normal', })
+  vim.api.nvim_set_hl(0, "Pmenu", { link = 'Normal', }) -- menu background
+  --vim.api.nvim_set_hl(0, "CmpBorder", { link = 'PmenuSel', })
+  --vim.api.nvim_set_hl(0, "PmenuSel", { }) -- selected item
+  --vim.api.nvim_set_hl(0, "PmenuThumb", { link = 'Normal', })
+
+  ----local bg = vim.api.nvim_get_hl_by_name("PmenuSel", true).background
+  ----if bg then
+  ----  -- set border fg to that same color (hex)
+  ----  local hex = string.format("#%06x", bg)
+  ----  vim.api.nvim_set_hl(0, "CmpBorder", { fg = hex })
+  ----  -- if blink.cmp or another plugin uses its own border group, set it too:
+  ----  vim.api.nvim_set_hl(0, "BlinkCmpBorder", { fg = hex })
+  ----  vim.api.nvim_set_hl(0, "FloatBorder", { fg = hex })
+  ----end
+
+end
+
+set_hl_for_floating_window()
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+  pattern = '*',
+  desc = 'Avoid overwritten by loading color schemes later',
+  callback = set_hl_for_floating_window,
+})
+
+
+
+
+-- debug
+local mason_dap = require("mason-nvim-dap")
+local dap = require("dap")
+local ui = require("dapui")
+local dap_virtual_text = require("nvim-dap-virtual-text")
+
+-- Dap Virtual Text
+dap_virtual_text.setup()
+
+mason_dap.setup({
+	ensure_installed = { "cppdbg", "codelldb" },
+	automatic_installation = true,
+	handlers = {
+		function(config)
+			require("mason-nvim-dap").default_setup(config)
+		end,
+	},
+})
+
+dap.adapters.gdb = {
+  type = "executable",
+  command = "gdb",
+  args = { "--interpreter=dap", "--eval-command", "set print pretty on" }
+}
+
+dap.adapters.codelldb = {
+    type = "executable",
+    command = "codelldb",
+    name = "lldb"
+}
+
+-- Configurations
+dap.configurations.c = {
+
+  --{
+  --	name = "Launch file",
+  --	type = "cppdbg",
+  --	request = "launch",
+  --	program = function()
+  --		return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+  --	end,
+  --	cwd = "${workspaceFolder}",
+  --	stopAtEntry = false,
+  --	MIMode = "lldb",
+  --	miDebuggerPath = "/usr/bin/lldb",
+  --},
+  --{
+  --	name = "Attach to lldbserver :1234",
+  --	type = "cppdbg",
+  --	request = "launch",
+  --	MIMode = "lldb",
+  --	miDebuggerServerAddress = "localhost:1234",
+  --	miDebuggerPath = "/usr/bin/lldb",
+  --	cwd = "${workspaceFolder}",
+  --	program = function()
+  --		return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+  --	end,
+  --},
+  {
+    name = "Launch exe",
+    type = "codelldb",
+    request = "launch",
+    program = function()
+      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+    end,
+    cwd = '${workspaceFolder}',
+    stopOnEntry = false,
+  },
+  --{
+  --  name = "Launch",
+  --  type = "gdb",
+  --  request = "launch",
+  --  program = function()
+  --    return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+  --  end,
+  --  args = {}, -- provide arguments if needed
+  --  cwd = "${workspaceFolder}",
+  --  stopAtBeginningOfMainSubprogram = false,
+  --},
+  --{
+  --  name = "Select and attach to process",
+  --  type = "gdb",
+  --  request = "attach",
+  --  program = function()
+  --    return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+  --  end,
+  --  pid = function()
+  --    local name = vim.fn.input('Executable name (filter): ')
+  --    return require("dap.utils").pick_process({ filter = name })
+  --  end,
+  --  cwd = '${workspaceFolder}'
+  --},
+  --{
+  --  name = 'Attach to gdbserver :1234',
+  --  type = 'gdb',
+  --  request = 'attach',
+  --  target = 'localhost:1234',
+  --  program = function()
+  --    return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+  --  end,
+  --  cwd = '${workspaceFolder}'
+  --}
+}
+dap.configurations.cpp = dap.configurations.c
+dap.configurations.rust = dap.configurations.c
+
+-- Dap UI
+
+ui.setup()
+
+vim.fn.sign_define("DapBreakpoint", { text = "🐞" })
+
+dap.listeners.before.attach.dapui_config = function()
+	ui.open()
+end
+dap.listeners.before.launch.dapui_config = function()
+	ui.open()
+end
+dap.listeners.before.event_terminated.dapui_config = function()
+	ui.close()
+end
+dap.listeners.before.event_exited.dapui_config = function()
+	ui.close()
+end
