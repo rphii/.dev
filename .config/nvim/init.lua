@@ -1,4 +1,5 @@
 local mapn = function(lhs, rhs, desc) vim.keymap.set("n", lhs, rhs, { desc = desc }) end
+
 function has_words_before()
     local col = vim.api.nvim_win_get_cursor(0)[2]
     if col == 0 then
