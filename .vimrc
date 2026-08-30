@@ -19,4 +19,5 @@ set shiftwidth=4                " shift to 4 spaces
 " shift + h/l change tabs
 nnoremap <S-h> :tabprevious<CR>
 nnoremap <S-l> :tabnext<CR>
+nnoremap <C-l> :nohlsearch<CR>
 

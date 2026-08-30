@@ -112,7 +112,14 @@ vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live gr
 vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
 
+vim.keymap.set("v", "<leader>fg", function()
+  vim.cmd('normal! "vy')
+  local text = vim.fn.getreg("v")
+  text = text:gsub("\n", " ")
+  require("telescope.builtin").live_grep({ default_text = text })
+end, { desc = "Grep visual selection" })
+
 vim.g["markdown_folding"] = 1
 
-vim.api.nvim_set_option("clipboard", "unnamed")
+--vim.api.nvim_set_option("clipboard", "unnamed")
 
