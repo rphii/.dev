@@ -12,10 +12,11 @@ end
 --- General vim Option ------------------------------------------------------{{{
 --vim.cmd("colorscheme koehler")
 --vim.cmd("colorscheme slate")
---vim.cmd("colorscheme lunaperche")
+vim.cmd("colorscheme lunaperche")
 --vim.cmd("colorscheme sorbet")
+--vim.cmd("colorscheme elflord")
 --vim.cmd("colorscheme torte")
-vim.cmd("colorscheme unokai")
+--vim.cmd("colorscheme unokai")
 vim.opt.background = 'dark'
 vim.opt.number = true
 vim.opt.foldmethod = 'marker'
@@ -359,12 +360,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
     map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
     map("n", "<leader>e", vim.diagnostic.open_float, "Line diagnostics")
 
-    map('n', '<leader>f', function()
-      vim.lsp.buf.format({ async = true })
-    end, 'Format buffer')
-    map('n', '<leader>f', function()
-      vim.lsp.buf.format({ async = true })
-    end, 'Format buffer')
+    --map('n', '<leader>f', function()
+    --  vim.lsp.buf.format({ async = true })
+    --end, 'Format buffer')
 
     map("n", "<leader>h", function() -- 'ih'
       local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
@@ -522,41 +520,25 @@ vim.api.nvim_set_hl(0, "PmenuBorder", {
   link = "FloatBorder",
 })
 
-vim.api.nvim_create_autocmd("ColorScheme", {
-  callback = function()
-    vim.api.nvim_set_hl(0, "LspReferenceText",  { underline = true, bg = "NONE" })
-    vim.api.nvim_set_hl(0, "LspReferenceRead",  { underline = true, bg = "NONE" })
-    vim.api.nvim_set_hl(0, "LspReferenceWrite", { underline = true, bg = "NONE" })
-  end,
-})
--- Apply immediately for the current colorscheme
-vim.api.nvim_set_hl(0, "LspReferenceText",  { underline = true, bg = "NONE" })
-vim.api.nvim_set_hl(0, "LspReferenceRead",  { underline = true, bg = "NONE" })
-vim.api.nvim_set_hl(0, "LspReferenceWrite", { underline = true, bg = "NONE" })
-vim.api.nvim_set_hl(0, "LspReferenceText", {
-  underdotted = true,
-  sp = "#89b4fa",
-  bg = "NONE",
-  bold = true,
-})
+local function set_custom_highlights()
+    -- style things:
+    -- bold italic
+    -- underline undercurl underdouble underdotted underdashed 
+    -- strikethrough reverse standout nocombine
 
+    -- Highlight the LSP reference match (hold hover)
+    vim.api.nvim_set_hl(0, "LspReferenceText",  { bold = true, bg = "NONE" })
+    vim.api.nvim_set_hl(0, "LspReferenceRead",  { bold = true, bg = "NONE" })
+    vim.api.nvim_set_hl(0, "LspReferenceWrite", { bold = true, bg = "NONE" })
 
--- Fix highlighting for floating window..
-local set_hl_for_floating_window = function()
-  vim.api.nvim_set_hl(0, 'NormalFloat', {
-    link = 'Normal',
-  })
-  vim.api.nvim_set_hl(0, 'FloatBorder', {
-    bg = 'none',
-  })
-  vim.api.nvim_set_hl(0, "Pmenu", { link = 'Normal', }) -- menu background
+    -- Fix highlighting for floating window..
+    vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal', })
+    vim.api.nvim_set_hl(0, 'FloatBorder', { bg = 'none', })
+    vim.api.nvim_set_hl(0, "Pmenu", { link = 'Normal', }) -- menu background
 end
 
-set_hl_for_floating_window()
-
-vim.api.nvim_create_autocmd('ColorScheme', {
-  pattern = '*',
-  desc = 'Avoid overwritten by loading color schemes later',
-  callback = set_hl_for_floating_window,
+set_custom_highlights()
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = set_custom_highlights,
 })
 
