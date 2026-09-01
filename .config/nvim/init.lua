@@ -12,11 +12,12 @@ end
 --- General vim Option ------------------------------------------------------{{{
 --vim.cmd("colorscheme koehler")
 --vim.cmd("colorscheme slate")
-vim.cmd("colorscheme lunaperche")
+--vim.cmd("colorscheme lunaperche")
 --vim.cmd("colorscheme sorbet")
 --vim.cmd("colorscheme elflord")
 --vim.cmd("colorscheme torte")
 --vim.cmd("colorscheme unokai")
+vim.cmd("colorscheme catppuccin")
 vim.opt.background = 'dark'
 vim.opt.number = true
 vim.opt.foldmethod = 'marker'
@@ -62,7 +63,6 @@ vim.pack.add({
     -- ------ Treesitter -------------------------------------------------------
     -- Requires the `tree-sitter` CLI on PATH (macOS: `brew install tree-sitter`).
     { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
-    "https://github.com/windwp/nvim-ts-autotag",
     "https://github.com/nvim-treesitter/nvim-treesitter-context",
     { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", version = "main" },
 
@@ -148,11 +148,6 @@ blink.setup({
 
       ['<Tab>'] = {
           function(cmp)
-              if cmp.snippet_active() then
-                  return cmp.snippet_forward()
-              end
-          end,
-          function(cmp)
               if has_words_before() then
                   return cmp.show_and_insert_or_accept_single()
               end
@@ -167,22 +162,34 @@ blink.setup({
       -- Navigate to the previous suggestion or cancel completion if currently on the first one.
       ['<S-Tab>'] = {
           function(cmp)
-              if cmp.snippet_active() then
-                  return cmp.snippet_backward()
-              end
-          end,
-          function(cmp)
               if has_words_before() then
                   return cmp.select_prev()
               end
           end,
-          'fallback' },
-          ['<C-e>'] = { 'hide', 'fallback' },
-          ['<C-space>'] = { 'cancel', 'show', 'fallback' },
-          ['<enter>'] = { 'accept', 'fallback' },
+          'fallback'
       },
+      ['<C-e>'] = { 'hide', 'fallback' },
+      ['<C-space>'] = { 'cancel', 'show', 'fallback' },
+      ['<enter>'] = {
+          'accept',
+          function(cmp)
+              if cmp.snippet_active() then
+                  return cmp.snippet_forward()
+              end
+          end,
+          'fallback',
+      },
+      ['<C-a>'] = {
+          function(cmp)
+              if cmp.snippet_active() then
+                  return cmp.snippet_backward()
+              end
+          end,
+          'fallback',
+      },
+  },
 
-  })
+})
 
 --- add underline to the treesitter context
 vim.cmd('hi TreesitterContextBottom gui=underline guisp=Grey')
@@ -319,7 +326,15 @@ vim.lsp.config('bash-language-server', {
 vim.lsp.enable('bash-language-server')
 
 vim.lsp.config('clangd', {
-  cmd = { 'clangd', '--compile-commands-dir=build' },
+  cmd = { 'clangd', '--compile-commands-dir=build',
+      '--background-index',
+      -- '--clang-tidy',
+      -- '--header-insertion=iwyu',
+      '--completion-style=detailed',
+      '--function-arg-placeholders',
+      '--fallback-style=llvm',
+      '--header-insertion=never',
+  },
   root_markers = { '.clangd', 'compile_commands.json' },
   filetypes = { 'c', 'cpp' },
 })
@@ -364,7 +379,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
     --  vim.lsp.buf.format({ async = true })
     --end, 'Format buffer')
 
-    map("n", "<leader>h", function() -- 'ih'
+    map("n", "<leader>i", function() -- 'ih'
       local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
       vim.lsp.inlay_hint.enable(not enabled, { bufnr = 0 })
     end, "Toggle LSP inlay hints" )
