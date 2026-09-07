@@ -75,10 +75,83 @@ vim.pack.add({
     { src = "https://github.com/saghen/blink.cmp", version = vim.version.range("1") },
     "https://github.com/folke/which-key.nvim",
 
+    "https://github.com/lewis6991/gitsigns.nvim",
+
 })
 -----------------------------------------------------------------------------}}}
 
 --- Plugins Configuration ---------------------------------------------------{{{
+
+local gitsigns = require("gitsigns")
+
+gitsigns.setup({
+  current_line_blame = false,
+  auto_attach = true,
+
+  on_attach = function(bufnr)
+
+    local function map(mode, l, r, desc, opts)
+      opts = opts or {}
+      opts.desc = desc
+      opts.buffer = bufnr
+      vim.keymap.set(mode, l, r, opts)
+    end
+
+    -- Navigation
+    map('n', ']c', function()
+      if vim.wo.diff then
+        vim.cmd.normal({']c', bang = true})
+      else
+        gitsigns.nav_hunk('next')
+      end
+    end, "Gitsign hunk next")
+
+    map('n', '[c', function()
+      if vim.wo.diff then
+        vim.cmd.normal({'[c', bang = true})
+      else
+        gitsigns.nav_hunk('prev')
+      end
+    end, "Gitsign hunk previous")
+
+    -- Actions
+    map('n', '<leader>hs', gitsigns.stage_hunk, "Gitsign hunk stage")
+    map('n', '<leader>hr', gitsigns.reset_hunk, "Gitsign hunk reset")
+
+    map('v', '<leader>hs', function()
+      gitsigns.stage_hunk({ vim.fn.line('.'), vim.fn.line('v') })
+    end, "Gitsign hunk stage")
+
+    map('v', '<leader>hr', function()
+      gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') })
+    end, "Gitsign hunk reset")
+
+    map('n', '<leader>hS', gitsigns.stage_buffer, "Gitsign buffer stage")
+    map('n', '<leader>hR', gitsigns.reset_buffer, "Gitsign buffer reset")
+    map('n', '<leader>hp', gitsigns.preview_hunk, "Gitsign preview hunk")
+    map('n', '<leader>hi', gitsigns.preview_hunk_inline, "Gitsign hunk preview inline")
+
+    map('n', '<leader>hb', function()
+      gitsigns.blame_line({ full = true })
+    end, "Gitsign blame")
+
+    map('n', '<leader>hd', gitsigns.diffthis, "Gitsigh diff")
+
+    map('n', '<leader>hD', function()
+      gitsigns.diffthis('~')
+    end, "Gitsign diff ~")
+
+    map('n', '<leader>hQ', function() gitsigns.setqflist('all') end, "Gitsign set qf list all")
+    map('n', '<leader>hq', gitsigns.setqflist, "Gitsign set qf list")
+
+    -- Toggles
+    map('n', '<leader>tb', gitsigns.toggle_current_line_blame, "Gitsign toggle current line blame")
+    map('n', '<leader>tw', gitsigns.toggle_word_diff, "Gitsign toggle word diff")
+
+    -- Text object
+    map({'o', 'x'}, 'ih', gitsigns.select_hunk, "Gitsign select hunk")
+  end
+})
 
 local blink = require("blink.cmp")
 blink.setup({
@@ -134,7 +207,7 @@ blink.setup({
 
   sources = {
     -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
-    default = { 'lsp', 'path', 'snippets', 'buffer' },
+    default = { 'lsp', 'path', 'snippets' },
   },
 
   -- Use a preset for snippets, check the snippets documentation for more information
@@ -188,7 +261,6 @@ blink.setup({
           'fallback',
       },
   },
-
 })
 
 --- add underline to the treesitter context
@@ -375,19 +447,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
     map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
     map("n", "<leader>e", vim.diagnostic.open_float, "Line diagnostics")
 
-    --map('n', '<leader>f', function()
-    --  vim.lsp.buf.format({ async = true })
-    --end, 'Format buffer')
-
     map("n", "<leader>i", function() -- 'ih'
       local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
       vim.lsp.inlay_hint.enable(not enabled, { bufnr = 0 })
     end, "Toggle LSP inlay hints" )
----  global toggle:
----     vim.keymap.set("n", "<leader>iH", function()
----       local enabled = vim.lsp.inlay_hint.is_enabled()
----       vim.lsp.inlay_hint.enable(not enabled)
----     end, { desc = "Toggle all LSP inlay hints", })
 
     if client and client:supports_method("textDocument/documentHighlight") then
       local hl_group = vim.api.nvim_create_augroup("do_lsp_highlight", { clear = false })
@@ -409,75 +472,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
         end,
       })
     end
-    
-    --[=[
-    if client and client:supports_method('textDocument/completion') then
-      vim.lsp.completion.enable(true, client.id, bufnr, {
-        autotrigger = true,
-      })
-
-      local function tab_complete()
-        if vim.snippet.active({ direction = 1 }) then
-            vim.snippet.jump(1)
-            return ''
-        end
-        local do_tab = true
-        if vim.fn.pumvisible() == 1 then
-          local info = vim.fn.complete_info()
-          if #info.items == 1 and info.selected ~= -1 then
-            return '<CR>' -- '<C-y>' -- accept the only completion
-          end
-          return '<Down>' -- select next item
-        end
-
-        if has_words_before() then
-          vim.lsp.completion.get() -- open LSP completion
-          do_tab = false
-        end
-        return do_tab and '<Tab>' or ''
-      end
-  
-      local function shift_tab_complete()
-        if vim.fn.pumvisible() == 1 then
-          return '<Up>' -- select previous item
-        end
-  
-        --return '<C-h>' -- normal backspace behavior when popup is hidden
-        return '<S-Tab>' -- normal backspace behavior when popup is hidden
-      end
-  
-      --local function cancel_completion()
-      --  if vim.fn.pumvisible() == 1 then
-      --    return '<C-e>' -- hide popup and restore text before completion
-      --  end
-  
-      --  return ''
-      --end
-  
-      vim.keymap.set('i', '<Tab>', tab_complete, {
-        buffer = bufnr,
-        expr = true,
-        replace_keycodes = true,
-        desc = 'LSP completion / next item',
-      })
-  
-      vim.keymap.set('i', '<S-Tab>', shift_tab_complete, {
-        buffer = bufnr,
-        expr = true,
-        replace_keycodes = true,
-        desc = 'Previous completion item',
-      })
-  
-      --vim.keymap.set('i', '<S-Space>', cancel_completion, {
-      --  buffer = bufnr,
-      --  expr = true,
-      --  replace_keycodes = true,
-      --  desc = 'Cancel completion',
-      --})
-
-    end
-    --]=]
-
   end,
 })
 ---
@@ -528,11 +522,24 @@ end
 mapn("<leader>0", next_colorscheme, "Next colorscheme");
 -----------------------------------------------------------------------------}}}
 
-vim.api.nvim_set_hl(0, "FloatBorder", {
-  link = "Comment", -- or another border color
-})
-vim.api.nvim_set_hl(0, "PmenuBorder", {
-  link = "FloatBorder",
+local function set_catppuccin_diff_colors()
+  vim.api.nvim_set_hl(0, "FloatBorder", { link = "Comment", })
+  vim.api.nvim_set_hl(0, "PmenuBorder", { link = "FloatBorder", })
+  vim.api.nvim_set_hl(0, "DiffAdd", { fg = "#243b2a", bg = "#a6e3a1", })
+  vim.api.nvim_set_hl(0, "DiffDelete", { fg = "#3b2428", bg = "#f38ba8", })
+  vim.api.nvim_set_hl(0, "DiffChange", { fg = "#3a3424", bg = "#f9e2af", })
+  vim.api.nvim_set_hl(0, "DiffText", { fg = "#594b24", bg = "#f9e2af", })
+  --vim.api.nvim_set_hl(0, "GitSignsAdd", { link = "DiffAdd", })
+  --vim.api.nvim_set_hl(0, "GitSignsChange", { link = "DiffChange", })
+  --vim.api.nvim_set_hl(0, "GitSignsDelete", { link = "DiffDelete", })
+  vim.api.nvim_set_hl(0, "GitSignsAddInline", { link = "DiffAdd", })
+  vim.api.nvim_set_hl(0, "GitSignsChangeInline", { link = "DiffText", })
+  vim.api.nvim_set_hl(0, "GitSignsDeleteInline", { link = "DiffDelete", })
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "catppuccin*",
+  callback = set_catppuccin_diff_colors,
 })
 
 local function set_custom_highlights()
@@ -552,7 +559,6 @@ local function set_custom_highlights()
     vim.api.nvim_set_hl(0, "Pmenu", { link = 'Normal', }) -- menu background
 end
 
-set_custom_highlights()
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = set_custom_highlights,
 })
@@ -564,5 +570,9 @@ vim.keymap.set("v", "<leader>fg", function()
   require("telescope.builtin").live_grep({ default_text = text })
 end, { desc = "Grep visual selection" })
 
-
+-- apply highlights immediately
+set_custom_highlights()
+if vim.g.colors_name and vim.g.colors_name:match("^catppuccin") then
+  set_catppuccin_diff_colors()
+end
 
