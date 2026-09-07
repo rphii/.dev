@@ -549,9 +549,9 @@ local function set_custom_highlights()
     -- strikethrough reverse standout nocombine
 
     -- Highlight the LSP reference match (hold hover)
-    vim.api.nvim_set_hl(0, "LspReferenceText",  { bold = true, bg = "NONE" })
-    vim.api.nvim_set_hl(0, "LspReferenceRead",  { bold = true, bg = "NONE" })
-    vim.api.nvim_set_hl(0, "LspReferenceWrite", { bold = true, bg = "NONE" })
+    vim.api.nvim_set_hl(0, "LspReferenceText",  { bold = true, underline = true, })
+    vim.api.nvim_set_hl(0, "LspReferenceRead",  { bold = true, underline = true, })
+    vim.api.nvim_set_hl(0, "LspReferenceWrite", { bold = true, underline = true, })
 
     -- Fix highlighting for floating window..
     vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal', })
