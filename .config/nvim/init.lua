@@ -153,8 +153,7 @@ gitsigns.setup({
   end
 })
 
-local blink = require("blink.cmp")
-blink.setup({
+require("blink.cmp").setup({
   -- Enables keymaps, completions and signature help when true (doesn't apply to cmdline or term)
   --
   -- If the function returns 'force', the default conditions for disabling the plugin will be ignored
@@ -207,18 +206,60 @@ blink.setup({
 
   sources = {
     -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
-    default = { 'lsp', 'path', 'snippets' },
-  },
+    --default = { 'lsp', 'path', 'snippets' },
+    default = { 'lsp', 'path' },
+    providers = {
+        lsp = {
+            transform_items = function(_, items)
+                for _, item in ipairs(items) do
+                    local text = item.label:match("^[^(]+") or item.label
+                    --text = text:gsub(";%s*$", "")
+                    text = vim.trim(text)
+
+                    if item.textEdit then
+                        -- Preserve the LSP-provided replacement range.
+                        item.textEdit.newText = text
+                    else
+                        item.insertText = text
+                    end
+
+                    item.insertTextFormat = vim.lsp.protocol.InsertTextFormat.PlainText
+                end
+
+                return items
+            end,
+        },
+    },
+},
 
   -- Use a preset for snippets, check the snippets documentation for more information
   --snippets = { preset = 'default' | 'luasnip' | 'mini_snippets' | 'vsnip' },
 
   -- Experimental signature help support
   --- signature = { enabled = true, window = { border = 'single' }, }
+  signature = {
+      enabled = true,
+      trigger = {
+        -- Show after entering `(`, `,`, etc.
+        show_on_trigger_character = true,
+
+        -- Keep/update it while typing arguments
+        show_on_insert = true,
+
+        -- Optional: also show when the cursor is after a function name
+        show_on_keyword = true,
+    },
+
+    window = {
+        show_documentation = true,
+    },
+  },
 
   keymap = {
       preset = 'none',
+      --['<enter>'] = { 'accept', 'fallback' },
 
+      -- [==[
       ['<Tab>'] = {
           function(cmp)
               if has_words_before() then
@@ -260,6 +301,7 @@ blink.setup({
           end,
           'fallback',
       },
+      --]==]
   },
 })
 
