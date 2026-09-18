@@ -283,7 +283,7 @@ require("blink.cmp").setup({
           'fallback'
       },
       ['<C-e>'] = { 'hide', 'fallback' },
-      ['<C-space>'] = { 'cancel', 'show', 'fallback' },
+      ['<C-space>'] = { 'hide_signature', 'cancel', 'show', 'fallback' },
       ['<enter>'] = {
           'accept',
           function(cmp)
